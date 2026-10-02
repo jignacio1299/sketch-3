@@ -7,7 +7,7 @@
       #ball {
         display: flex;
         border-radius: 0;
-        background-color: maroon;
+        background-color: #1dcc7e;
         position: absolute;
         width: 50px;
         height: 50px;
@@ -24,6 +24,9 @@
       
       function stretchElement(element) {
         let pos1 = 0, pos2 = 0, pos3 = 0, pos4 = 0;
+        
+        let colorRelaxed = "#1dcc7e";
+        let colorStretched = "#cc601d";
         
         if (document.getElementById("ball")) {
           document.getElementById("ball").onmousedown = dragMouseDown;
@@ -52,19 +55,107 @@
           pos3 = e.clientX;
           pos4 = e.clientY;
           
+          // Instead of dragging, change the width and height to
+          // "stretch" the shape
           element.style.width = (pos3 - element.style.left) + "px";
           element.style.height = (pos4 - element.style.top) + "px";
-          element.style.backgroundColor = "blue";
+          
+          lerpColor();
+          
+        }
+        
+        function lerpColor() {
+          // While stretching, also change the color based on
+          // how much it is stretched
+          
+          // Calculate which dimension is stretched more
+          // width or height. Store as "stretchDist"
+          
+          let stretchDist = element.offsetWidth;
+          
+          if (element.offsetWidth > element.offsetHeight) {
+            stretchDist = element.offsetWidth;
+          }
+          else {
+            stretchDist = element.offsetHeight;
+          }
+          
+          // Color will be colorStretched if stretchDist > 200.
+          
+          const maxStretchVal = 400.0; 
+          
+          if (stretchDist > maxStretchVal) {
+            element.style.backgroundColor = colorStretched;
+            return;
+          }
+          
+          // Interpolate between colorRelaxed and colorStretched
+          // The color of the div will gradient based on how
+          // far it is stretched. Store lerp as t, a value
+          // between 0 and 1 to determine how far along the gradient
+          // the color should be
+          // Source: https://stackoverflow.com/questions/22218140/calculate-the-color-at-a-given-point-on-a-gradient-between-two-colors 
+          
+          let t = stretchDist / maxStretchVal;
+          
+          // Hexcode maths. Separate both colors by their channels
+          // and calculate the point along the gradient by
+          // multiplying by t
+          // Source for hexadecimal <==> int conversion
+          // https://stackoverflow.com/questions/51009465/how-do-you-convert-a-hexadecimal-of-type-string-to-number-in-js
+          // Source for int casting: https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Math/trunc
+          
+          // Linear interpolation: f(t) = A + (B - A)t
+          // "#RRGGBB"
+          let redRelax = Number("0x" + colorRelaxed[1] + colorRelaxed[2]);
+          let redStret = Number("0x" + colorStretched[1] + colorStretched[2]);
+          let redChan = Math.trunc(Number(redRelax + ((redStret - redRelax) * t)));
+          
+          let greenRelax = Number("0x" + colorRelaxed[3] + colorRelaxed[4]);
+          let greenStret = Number("0x" + colorStretched[3] + colorStretched[4]);
+          let greenChan = Math.trunc(Number(greenRelax + ((greenStret - greenRelax) * t)));
+          
+          let blueRelax = Number("0x" + colorRelaxed[5] + colorRelaxed[6]);
+          let blueStret = Number("0x" + colorStretched[5] + colorStretched[6]);
+          let blueChan = Math.trunc(Number(blueRelax + ((blueStret - blueRelax) * t)));
+          
+          let newColor = "#" + redChan.toString(16) + greenChan.toString(16) + blueChan.toString(16);
+          
+          element.style.backgroundColor = newColor;
+          
+          element.innerHTML = "<p>" + newColor + "</p>";
           
         }
         
         function closeDragElement() {
-          element.style.height = (50) + "px";
-          element.style.width = (50) + "px";
-          element.style.backgroundColor = "maroon";
+          
+          let unstretchSpeed = 20; // Pixels per interval
+          const ID = setInterval(() => {
+            
+            if(element.offsetTop <= 50 && element.offsetLeft <= 50) {
+              // clearInterval(ID);
+              return;
+            }
+            
+            if(element.offsetTop > 50) {
+              element.offsetTop -= unstretchSpeed;
+            }
+            if(element.offsetLeft > 50) {
+              element.offsetLeft -= unstretchSpeed;
+            }
+            
+            
+            
+          }, 500);
+            
+            
+          // element.style.height = (50) + "px";
+          // element.style.width = (50) + "px";
+          // element.style.backgroundColor = colorRelaxed;
           document.onmouseup = null;
           document.onmousemove = null;
         }
+        
       }
     </script>
   </body>
