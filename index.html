@@ -11,12 +11,14 @@
         position: absolute;
         width: 50px;
         height: 50px;
+        justify-items: center;
+        align-items: center;
       }
     </style>
   </head>
   <body>
     <div id="ball">
-      
+      GRAB ME
     </div>
     
     <script>
@@ -128,32 +130,50 @@
         }
         
         function closeDragElement() {
+          element.onmousedown = null;
           
-          let unstretchSpeed = 20; // Pixels per interval
-          const ID = setInterval(() => {
+          let unstretchSpeed = 2; // Pixels per interval
+          
+          let currWidth = parseInt(element.style.width);
+          let currHeight = parseInt(element.style.height);
+          
+          
+          document.onmouseup = null;
+          document.onmousemove = null;      
+          const ID = setInterval(function() {
             
-            if(element.offsetTop <= 50 && element.offsetLeft <= 50) {
-              // clearInterval(ID);
+            console.log("width: " + currWidth + " || height: " + currHeight);
+
+            // Stop once the element reaches 50x50
+            if (currWidth <= 50 && currHeight <= 50) {
+              clearInterval(ID);
+              element.style.width = "50px";
+              element.style.height = "50px";
+
+              // Reset
+              element.style.backgroundColor = colorRelaxed;
+              element.onmousedown = dragMouseDown;
               return;
             }
-            
-            if(element.offsetTop > 50) {
-              element.offsetTop -= unstretchSpeed;
+
+            // Shrink width
+            if (currWidth > 50) {
+              currWidth -= unstretchSpeed;
+
+              if (currWidth < 50) { currWidth = 50; }
+              element.style.width = currWidth + "px";
             }
-            if(element.offsetLeft > 50) {
-              element.offsetLeft -= unstretchSpeed;
+
+            // Shrink height
+            if (currHeight > 50) {
+              currHeight -= unstretchSpeed;
+              if (currHeight < 50) { currHeight = 50; }
+              element.style.height = currHeight + "px";
             }
-            
-            
-            
-          }, 500);
-            
-            
-          // element.style.height = (50) + "px";
-          // element.style.width = (50) + "px";
-          // element.style.backgroundColor = colorRelaxed;
-          document.onmouseup = null;
-          document.onmousemove = null;
+
+            lerpColor();
+
+          }, 1);
         }
         
       }
